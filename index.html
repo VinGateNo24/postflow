@@ -117,6 +117,62 @@
   .stat-label { font-size: 0.8rem; color: var(--muted); }
   s { text-decoration: none; }
 
+  /* API KEY BUTTON */
+  .api-key-btn {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 16px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .api-key-btn:hover { border-color: var(--accent); }
+  .api-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #ef4444; flex-shrink: 0;
+    transition: background 0.3s;
+  }
+  .api-dot.on { background: var(--accent); }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.75); backdrop-filter: blur(8px);
+    z-index: 300; align-items: center; justify-content: center; padding: 24px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 20px; padding: 36px; width: 100%; max-width: 440px;
+  }
+  .modal-box h2 { font-family: 'Syne', sans-serif; font-size: 1.3rem; margin-bottom: 12px; }
+  .modal-box p { font-size: 0.88rem; color: var(--muted); line-height: 1.6; margin-bottom: 20px; }
+  .modal-box a { color: var(--accent); }
+  .modal-box input {
+    width: 100%; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 10px; color: var(--text); font-family: 'Inter', sans-serif;
+    font-size: 0.95rem; padding: 12px 16px; outline: none; margin-bottom: 16px;
+    transition: border-color 0.2s;
+  }
+  .modal-box input:focus { border-color: var(--accent); }
+  .modal-btns { display: flex; gap: 10px; }
+  .modal-save {
+    flex: 1; background: var(--gradient); color: #0D0D0F; border: none;
+    border-radius: 10px; padding: 11px; font-weight: 700;
+    font-family: 'Inter', sans-serif; cursor: pointer; font-size: 0.9rem;
+  }
+  .modal-cancel {
+    padding: 11px 18px; background: transparent; color: var(--muted);
+    border: 1px solid var(--border); border-radius: 10px;
+    font-family: 'Inter', sans-serif; cursor: pointer; font-size: 0.9rem;
+  }
+  .modal-cancel:hover { border-color: var(--muted); }
+
   /* APP CONTAINER */
   .app-container {
     max-width: 760px;
@@ -386,8 +442,26 @@
 
 <nav>
   <div class="logo">PostFlow</div>
-  <div class="nav-badge">✦ Propulsé par l'IA</div>
+  <button class="api-key-btn" id="apiKeyBtn" onclick="openApiModal()">
+    <span class="api-dot" id="apiDot"></span>
+    <span id="apiKeyLabel">Clé API Groq</span>
+  </button>
 </nav>
+
+<!-- API KEY MODAL -->
+<div class="modal-overlay" id="apiModal">
+  <div class="modal-box">
+    <h2>Clé API Groq <span style="color:var(--accent)">(gratuite)</span></h2>
+    <p>PostFlow utilise Groq + Llama 3.3 70B pour générer tes posts.<br>
+    Crée une clé gratuite sur <a href="https://console.groq.com" target="_blank">console.groq.com</a> → API Keys.<br>
+    Ta clé est stockée uniquement dans ton navigateur.</p>
+    <input type="text" id="apiKeyInput" placeholder="gsk_..." autocomplete="off" />
+    <div class="modal-btns">
+      <button class="modal-save" onclick="saveApiKey()">Enregistrer</button>
+      <button class="modal-cancel" onclick="closeApiModal()">Annuler</button>
+    </div>
+  </div>
+</div>
 
 <section class="hero">
   <div class="hero-tag">✦ Générateur IA</div>
@@ -534,10 +608,13 @@ Pour chaque post, fournis exactement ce format JSON (tableau de 7 objets) :
 
 Réponds UNIQUEMENT avec le JSON valide, rien d'autre. Pas de markdown, pas d'explication.`;
 
+  const apiKey = getApiKey();
+  if (!apiKey) { openApiModal(); btn.disabled = false; btnText.innerHTML = '✦ Générer 7 posts'; return; }
+
   try {
     const response = await fetch("/api/generate", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "x-api-key": apiKey },
       body: JSON.stringify({ prompt })
     });
 
@@ -605,6 +682,31 @@ function escapeHtml(str) {
 document.getElementById('pricingModal').addEventListener('click', function(e) {
   if (e.target === this) closePricing();
 });
+
+// API KEY MANAGEMENT
+function getApiKey() { return localStorage.getItem('pf_groq_key') || ''; }
+function saveApiKey() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if (!key.startsWith('gsk_')) { alert('La clé Groq doit commencer par gsk_'); return; }
+  localStorage.setItem('pf_groq_key', key);
+  updateApiStatus();
+  closeApiModal();
+}
+function openApiModal() {
+  document.getElementById('apiKeyInput').value = getApiKey();
+  document.getElementById('apiModal').classList.add('open');
+}
+function closeApiModal() { document.getElementById('apiModal').classList.remove('open'); }
+function updateApiStatus() {
+  const has = !!getApiKey();
+  document.getElementById('apiDot').classList.toggle('on', has);
+  document.getElementById('apiKeyLabel').textContent = has ? 'Groq connecté' : 'Clé API Groq';
+}
+document.getElementById('apiModal').addEventListener('click', function(e) {
+  if (e.target === this) closeApiModal();
+});
+updateApiStatus();
+if (!getApiKey()) setTimeout(openApiModal, 600);
 </script>
 </body>
 </html>

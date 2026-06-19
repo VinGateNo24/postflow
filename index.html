@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PostFlow — Générateur de Posts Instagram IA</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ig-grad: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+      --purple: #7c3aed;
+      --purple-light: #a78bfa;
+      --purple-dark: #5b21b6;
+      --bg: #0f0f13;
+      --surface: #1a1a24;
+      --surface2: #22222f;
+      --border: #2e2e40;
+      --text: #f1f1f5;
+      --muted: #8888a8;
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* HEADER */
+    header {
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      background: rgba(15,15,19,0.8);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--ig-grad);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .logo span { background: var(--ig-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+    .api-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .api-badge:hover { border-color: var(--purple-light); }
+    .api-dot { width: 8px; height: 8px; border-radius: 50%; background: #ef4444; }
+    .api-dot.connected { background: #22c55e; }
+
+    /* MAIN LAYOUT */
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 24px;
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 32px;
+      align-items: start;
+    }
+
+    @media (max-width: 860px) {
+      main { grid-template-columns: 1fr; }
+    }
+
+    /* HERO */
+    .hero {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 24px 0 8px;
+    }
+    .hero h1 {
+      font-size: clamp(28px, 5vw, 48px);
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      line-height: 1.1;
+      margin-bottom: 12px;
+    }
+    .hero h1 span { background: var(--ig-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero p { color: var(--muted); font-size: 17px; max-width: 500px; margin: 0 auto; }
+
+    /* FORM CARD */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 20px;
+    }
+
+    .field { margin-bottom: 20px; }
+    .field label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    input[type="text"], select, textarea {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      color: var(--text);
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input[type="text"]:focus, select:focus, textarea:focus {
+      border-color: var(--purple-light);
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+    }
+    select option { background: var(--surface2); }
+    textarea { resize: vertical; min-height: 80px; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    /* TOGGLE ROW */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+    }
+    .toggle-label { font-size: 14px; color: var(--text); }
+    .toggle {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      cursor: pointer;
+    }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: var(--border);
+      border-radius: 24px;
+      transition: background 0.2s;
+    }
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      background: #fff;
+      border-radius: 50%;
+      top: 3px;
+      left: 3px;
+      transition: transform 0.2s;
+    }
+    .toggle input:checked + .toggle-slider { background: var(--purple); }
+    .toggle input:checked + .toggle-slider::before { transform: translateX(20px); }
+
+    /* SLIDER */
+    .slider-row { display: flex; align-items: center; gap: 12px; }
+    .slider-row input[type="range"] {
+      flex: 1;
+      -webkit-appearance: none;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      outline: none;
+      border: none;
+      padding: 0;
+    }
+    .slider-row input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--purple);
+      cursor: pointer;
+      border: 2px solid #fff;
+    }
+    .slider-val {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--purple-light);
+      min-width: 24px;
+      text-align: center;
+    }
+
+    /* GENERATE BUTTON */
+    .btn-generate {
+      width: 100%;
+      padding: 15px;
+      background: var(--ig-grad);
+      border: none;
+      border-radius: var(--radius-sm);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: opacity 0.2s, transform 0.1s;
+      letter-spacing: 0.3px;
+    }
+    .btn-generate:hover { opacity: 0.92; transform: translateY(-1px); }
+    .btn-generate:active { transform: translateY(0); }
+    .btn-generate:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* INSTAGRAM PREVIEW */
+    .preview-panel { position: sticky; top: 90px; }
+
+    .ig-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .ig-header {
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .ig-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--ig-grad);
+      flex-shrink: 0;
+    }
+    .ig-username { font-weight: 600; font-size: 14px; }
+    .ig-handle { font-size: 12px; color: var(--muted); }
+    .ig-dots { margin-left: auto; color: var(--muted); font-size: 20px; line-height: 1; cursor: pointer; }
+
+    .ig-image {
+      width: 100%;
+      aspect-ratio: 1;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 60px;
+      position: relative;
+      overflow: hidden;
+    }
+    .ig-image::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--ig-grad);
+      opacity: 0.15;
+    }
+
+    .ig-actions {
+      padding: 12px 16px 8px;
+      display: flex;
+      gap: 16px;
+    }
+    .ig-action { color: var(--text); font-size: 24px; cursor: pointer; opacity: 0.8; }
+    .ig-action:hover { opacity: 1; }
+    .ig-save { margin-left: auto; }
+
+    .ig-likes {
+      padding: 2px 16px 8px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .ig-caption {
+      padding: 4px 16px 16px;
+      font-size: 14px;
+      line-height: 1.55;
+      max-height: 240px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .ig-caption::-webkit-scrollbar { width: 4px; }
+    .ig-caption::-webkit-scrollbar-track { background: transparent; }
+    .ig-caption::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .ig-caption .hashtag { color: #818cf8; }
+    .ig-caption .emoji { font-style: normal; }
+
+    .ig-placeholder {
+      color: var(--muted);
+      font-style: italic;
+      font-size: 14px;
+      padding: 16px;
+    }
+
+    .ig-timestamp {
+      padding: 0 16px 14px;
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* COPY BAR */
+    .copy-bar {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .btn-copy, .btn-regen {
+      flex: 1;
+      padding: 11px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+    }
+    .btn-copy {
+      background: var(--purple);
+      color: #fff;
+    }
+    .btn-copy:hover { background: var(--purple-dark); }
+    .btn-copy.copied { background: #22c55e; }
+    .btn-regen {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-regen:hover { border-color: var(--purple-light); }
+    .btn-regen:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ERROR */
+    .error-box {
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      font-size: 14px;
+      color: #fca5a5;
+      margin-top: 16px;
+      display: none;
+    }
+
+    /* MODAL */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(6px);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
+      width: 100%;
+      max-width: 460px;
+      transform: translateY(16px);
+      transition: transform 0.2s;
+    }
+    .modal-overlay.open .modal { transform: translateY(0); }
+    .modal h2 { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+    .modal p { font-size: 14px; color: var(--muted); margin-bottom: 20px; line-height: 1.5; }
+    .modal a { color: var(--purple-light); }
+    .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
+    .btn-primary {
+      flex: 1;
+      padding: 12px;
+      background: var(--purple);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-primary:hover { background: var(--purple-dark); }
+    .btn-secondary {
+      padding: 12px 16px;
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .btn-secondary:hover { border-color: var(--muted); }
+
+    /* FOOTER */
+    footer {
+      text-align: center;
+      padding: 32px;
+      color: var(--muted);
+      font-size: 13px;
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+    }
+    footer a { color: var(--purple-light); text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<!-- API KEY MODAL -->
+<div class="modal-overlay" id="apiModal">
+  <div class="modal">
+    <h2>Clé API Anthropic</h2>
+    <p>
+      PostFlow utilise <strong>Claude claude-sonnet-4-6</strong> pour générer tes posts.<br><br>
+      Tu as besoin d'une clé API gratuite sur
+      <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>.
+      Ta clé est stockée uniquement dans ton navigateur.
+    </p>
+    <div class="field">
+      <label>Clé API (sk-ant-...)</label>
+      <input type="text" id="apiKeyInput" placeholder="sk-ant-api03-..." />
+    </div>
+    <div class="modal-btns">
+      <button class="btn-primary" onclick="saveApiKey()">Enregistrer</button>
+      <button class="btn-secondary" onclick="closeModal()">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">✦</div>
+    <span>PostFlow</span>
+  </div>
+  <div class="api-badge" onclick="openModal()">
+    <div class="api-dot" id="apiDot"></div>
+    <span id="apiStatus">Configurer la clé API</span>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main>
+  <!-- HERO -->
+  <div class="hero">
+    <h1>Génère des posts Instagram<br><span>viraux en 10 secondes</span></h1>
+    <p>Propulsé par Claude claude-sonnet-4-6 — l'IA la plus avancée pour le copywriting Instagram.</p>
+  </div>
+
+  <!-- FORM -->
+  <div>
+    <div class="card">
+      <div class="card-title">Paramètres du post</div>
+
+      <div class="field">
+        <label>Sujet / Idée principale</label>
+        <textarea id="topic" placeholder="Ex: Comment j'ai doublé mes revenus en 6 mois grâce à l'automatisation..."></textarea>
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label>Ton</label>
+          <select id="tone">
+            <option value="inspiring">Inspirant</option>
+            <option value="storytelling" selected>Storytelling</option>
+            <option value="educational">Éducatif</option>
+            <option value="funny">Drôle</option>
+            <option value="professional">Professionnel</option>
+            <option value="provocateur">Provocateur</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Langue</label>
+          <select id="language">
+            <option value="fr" selected>Français</option>
+            <option value="en">Anglais</option>
+            <option value="es">Espagnol</option>
+            <option value="de">Allemand</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Style d'accroche</label>
+        <select id="postStyle">
+          <option value="hook">Hook percutant (&lt; 8 mots)</option>
+          <option value="question">Question interpellante</option>
+          <option value="stat">Statistique surprenante</option>
+          <option value="story">Micro-histoire personnelle</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Audience cible</label>
+        <input type="text" id="targetAudience" placeholder="Ex: entrepreneurs, créateurs de contenu, étudiants..." />
+      </div>
+
+      <div class="field">
+        <label>Nombre de hashtags — <span id="hashtagLabel">15</span></label>
+        <div class="slider-row">
+          <input type="range" id="hashtagCount" min="5" max="30" value="15"
+            oninput="document.getElementById('hashtagLabel').textContent = this.value" />
+          <span class="slider-val" id="hashtagVal">15</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="toggle-row">
+          <span class="toggle-label">Inclure des emojis</span>
+          <label class="toggle">
+            <input type="checkbox" id="includeEmojis" checked />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <button class="btn-generate" id="generateBtn" onclick="generatePost()">
+        ✦ Générer mon post Instagram
+      </button>
+
+      <div class="error-box" id="errorBox"></div>
+    </div>
+  </div>
+
+  <!-- PREVIEW -->
+  <div class="preview-panel">
+    <div class="card-title" style="margin-bottom:12px;">Aperçu Instagram</div>
+    <div class="ig-card">
+      <div class="ig-header">
+        <div class="ig-avatar"></div>
+        <div>
+          <div class="ig-username">ton_compte</div>
+          <div class="ig-handle">@toncompte · Sponsorisé</div>
+        </div>
+        <div class="ig-dots">···</div>
+      </div>
+
+      <div class="ig-image">
+        <span id="previewEmoji">✦</span>
+      </div>
+
+      <div class="ig-actions">
+        <span class="ig-action">♡</span>
+        <span class="ig-action">💬</span>
+        <span class="ig-action">✈️</span>
+        <span class="ig-action ig-save">🔖</span>
+      </div>
+
+      <div class="ig-likes">2 847 J'aime</div>
+
+      <div class="ig-caption" id="previewCaption">
+        <span class="ig-placeholder">Ton post apparaîtra ici une fois généré...</span>
+      </div>
+
+      <div class="ig-timestamp">Il y a 2 minutes</div>
+    </div>
+
+    <div class="copy-bar">
+      <button class="btn-copy" id="copyBtn" onclick="copyPost()" disabled>Copier le post</button>
+      <button class="btn-regen" id="regenBtn" onclick="generatePost()" disabled>↻ Regénérer</button>
+    </div>
+  </div>
+</main>
+
+<footer>
+  Fait avec ♥ et <strong>Claude claude-sonnet-4-6</strong> · <a href="https://console.anthropic.com" target="_blank">Obtenir une clé API gratuite</a>
+</footer>
+
+<script>
+  let currentPost = '';
+
+  // Sync slider display
+  const slider = document.getElementById('hashtagCount');
+  slider.addEventListener('input', () => {
+    document.getElementById('hashtagLabel').textContent = slider.value;
+    document.getElementById('hashtagVal').textContent = slider.value;
+  });
+
+  // API Key management
+  function getApiKey() { return localStorage.getItem('pf_api_key') || ''; }
+  function saveApiKey() {
+    const key = document.getElementById('apiKeyInput').value.trim();
+    if (!key.startsWith('sk-ant-')) {
+      alert('La clé doit commencer par sk-ant-');
+      return;
+    }
+    localStorage.setItem('pf_api_key', key);
+    updateApiStatus();
+    closeModal();
+  }
+  function openModal() {
+    document.getElementById('apiKeyInput').value = getApiKey();
+    document.getElementById('apiModal').classList.add('open');
+  }
+  function closeModal() { document.getElementById('apiModal').classList.remove('open'); }
+  function updateApiStatus() {
+    const key = getApiKey();
+    const dot = document.getElementById('apiDot');
+    const status = document.getElementById('apiStatus');
+    if (key) {
+      dot.classList.add('connected');
+      status.textContent = 'API connectée';
+    } else {
+      dot.classList.remove('connected');
+      status.textContent = 'Configurer la clé API';
+    }
+  }
+
+  // Close modal on overlay click
+  document.getElementById('apiModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  // Render caption with highlighted hashtags
+  function renderCaption(text) {
+    return text.replace(/(#\w+)/g, '<span class="hashtag">$1</span>');
+  }
+
+  // Pick emoji based on content
+  function pickEmoji(text) {
+    const t = text.toLowerCase();
+    if (t.includes('business') || t.includes('entrepren')) return '💼';
+    if (t.includes('fitness') || t.includes('sport') || t.includes('muscle')) return '💪';
+    if (t.includes('money') || t.includes('argent') || t.includes('revenus')) return '💰';
+    if (t.includes('love') || t.includes('amour')) return '❤️';
+    if (t.includes('food') || t.includes('recette') || t.includes('cuisine')) return '🍽️';
+    if (t.includes('travel') || t.includes('voyage')) return '✈️';
+    if (t.includes('motivation') || t.includes('inspir')) return '🔥';
+    if (t.includes('tech') || t.includes('ia') || t.includes('code')) return '🤖';
+    return '✨';
+  }
+
+  async function generatePost() {
+    const apiKey = getApiKey();
+    if (!apiKey) { openModal(); return; }
+
+    const topic = document.getElementById('topic').value.trim();
+    if (!topic) {
+      showError('Entre un sujet pour générer ton post.');
+      return;
+    }
+
+    const btn = document.getElementById('generateBtn');
+    const regenBtn = document.getElementById('regenBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>Génération en cours...';
+    document.getElementById('errorBox').style.display = 'none';
+
+    const payload = {
+      topic,
+      tone: document.getElementById('tone').value,
+      language: document.getElementById('language').value,
+      hashtagCount: parseInt(slider.value),
+      includeEmojis: document.getElementById('includeEmojis').checked,
+      postStyle: document.getElementById('postStyle').value,
+      targetAudience: document.getElementById('targetAudience').value.trim()
+    };
+
+    try {
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || 'Erreur inconnue');
+
+      currentPost = data.content;
+      document.getElementById('previewCaption').innerHTML = renderCaption(currentPost);
+      document.getElementById('previewEmoji').textContent = pickEmoji(topic);
+      document.getElementById('copyBtn').disabled = false;
+      regenBtn.disabled = false;
+
+    } catch (err) {
+      showError('Erreur : ' + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '✦ Générer mon post Instagram';
+    }
+  }
+
+  function showError(msg) {
+    const box = document.getElementById('errorBox');
+    box.textContent = msg;
+    box.style.display = 'block';
+  }
+
+  function copyPost() {
+    if (!currentPost) return;
+    navigator.clipboard.writeText(currentPost).then(() => {
+      const btn = document.getElementById('copyBtn');
+      btn.textContent = '✓ Copié !';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copier le post';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  }
+
+  // Init
+  updateApiStatus();
+  if (!getApiKey()) setTimeout(openModal, 800);
+</script>
+</body>
+</html>

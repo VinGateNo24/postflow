@@ -1,840 +1,609 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PostFlow — Générateur de Posts Instagram IA</title>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PostFlow — Génère tes posts Instagram en 10 secondes</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Inter:wght@400;500;600&display=swap');
 
-    :root {
-      --ig-grad: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
-      --purple: #7c3aed;
-      --purple-light: #a78bfa;
-      --purple-dark: #5b21b6;
-      --gold: #f59e0b;
-      --gold-dark: #d97706;
-      --bg: #0f0f13;
-      --surface: #1a1a24;
-      --surface2: #22222f;
-      --border: #2e2e40;
-      --text: #f1f1f5;
-      --muted: #8888a8;
-      --radius: 16px;
-      --radius-sm: 10px;
-    }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-    }
+  :root {
+    --bg: #0D0D0F;
+    --surface: #16161A;
+    --border: #252530;
+    --accent: #C8F135;
+    --accent-dim: rgba(200,241,53,0.12);
+    --text: #F0F0F0;
+    --muted: #888899;
+    --card: #1C1C22;
+    --gradient: linear-gradient(135deg, #C8F135 0%, #8FE020 100%);
+  }
 
-    /* ── HEADER ── */
-    header {
-      padding: 16px 32px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid var(--border);
-      background: rgba(15,15,19,0.85);
-      backdrop-filter: blur(14px);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      gap: 12px;
-    }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    line-height: 1.6;
+  }
 
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 20px;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-      flex-shrink: 0;
-    }
-    .logo-icon {
-      width: 36px; height: 36px;
-      background: var(--ig-grad);
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 18px;
-    }
-    .logo span { background: var(--ig-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  /* NAV */
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 40px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: rgba(13,13,15,0.92);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+  }
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.4rem;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+  }
+  .nav-badge {
+    background: var(--accent-dim);
+    color: var(--accent);
+    border: 1px solid rgba(200,241,53,0.3);
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
 
-    .header-right { display: flex; align-items: center; gap: 10px; }
+  /* HERO */
+  .hero {
+    text-align: center;
+    padding: 80px 24px 60px;
+    max-width: 680px;
+    margin: 0 auto;
+  }
+  .hero-tag {
+    display: inline-block;
+    background: var(--accent-dim);
+    color: var(--accent);
+    border-radius: 20px;
+    padding: 5px 16px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-bottom: 24px;
+    text-transform: uppercase;
+  }
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2.2rem, 6vw, 3.4rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -1.5px;
+    margin-bottom: 20px;
+  }
+  h1 span {
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero p {
+    color: var(--muted);
+    font-size: 1.05rem;
+    max-width: 480px;
+    margin: 0 auto 40px;
+  }
 
-    .btn-premium-header {
-      display: flex; align-items: center; gap: 6px;
-      background: linear-gradient(135deg, #f59e0b, #ef4444);
-      color: #fff;
-      border: none;
-      border-radius: 999px;
-      padding: 8px 18px;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      text-decoration: none;
-      white-space: nowrap;
-      transition: opacity 0.2s, transform 0.1s;
-      letter-spacing: 0.2px;
-    }
-    .btn-premium-header:hover { opacity: 0.88; transform: translateY(-1px); }
+  /* STATS */
+  .stats {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-bottom: 60px;
+    flex-wrap: wrap;
+  }
+  .stat { text-align: center; }
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--accent);
+  }
+  .stat-label { font-size: 0.8rem; color: var(--muted); }
 
-    .api-badge {
-      display: flex; align-items: center; gap: 8px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: 6px 14px;
-      font-size: 13px;
-      cursor: pointer;
-      transition: border-color 0.2s;
-      white-space: nowrap;
-    }
-    .api-badge:hover { border-color: var(--purple-light); }
-    .api-dot { width: 8px; height: 8px; border-radius: 50%; background: #ef4444; }
-    .api-dot.connected { background: #22c55e; }
+  /* APP CONTAINER */
+  .app-container {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
 
-    /* ── HERO ── */
-    .hero {
-      text-align: center;
-      padding: 56px 24px 20px;
-      max-width: 680px;
-      margin: 0 auto;
-    }
-    .hero-badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: rgba(245,158,11,0.12);
-      border: 1px solid rgba(245,158,11,0.3);
-      border-radius: 999px;
-      padding: 5px 14px;
-      font-size: 12px;
-      font-weight: 600;
-      color: #fbbf24;
-      margin-bottom: 20px;
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
-    }
-    .hero h1 {
-      font-size: clamp(30px, 5.5vw, 52px);
-      font-weight: 800;
-      letter-spacing: -1.5px;
-      line-height: 1.1;
-      margin-bottom: 16px;
-    }
-    .hero h1 span { background: var(--ig-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .hero p { color: var(--muted); font-size: 17px; line-height: 1.6; margin-bottom: 28px; }
+  /* USAGE COUNTER */
+  .usage-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    gap: 16px;
+  }
+  .usage-text { font-size: 0.88rem; color: var(--muted); }
+  .usage-text strong { color: var(--text); }
+  .upgrade-btn {
+    background: var(--gradient);
+    color: #0D0D0F;
+    border: none;
+    border-radius: 10px;
+    padding: 8px 18px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: 'Inter', sans-serif;
+    transition: opacity 0.2s;
+  }
+  .upgrade-btn:hover { opacity: 0.85; }
 
-    .hero-ctas { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  /* FORM */
+  .form-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px;
+    margin-bottom: 28px;
+  }
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  .field { display: flex; flex-direction: column; gap: 8px; }
+  .field.full { grid-column: 1 / -1; }
+  label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  input, select, textarea {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    padding: 12px 16px;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+  }
+  select option { background: #1C1C22; }
+  textarea { resize: vertical; min-height: 90px; }
 
-    .btn-stripe-hero {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: linear-gradient(135deg, #f59e0b, #ef4444);
-      color: #fff;
-      border: none;
-      border-radius: var(--radius-sm);
-      padding: 14px 28px;
-      font-size: 15px;
-      font-weight: 700;
-      cursor: pointer;
-      text-decoration: none;
-      transition: opacity 0.2s, transform 0.15s;
-      box-shadow: 0 4px 24px rgba(245,158,11,0.3);
-    }
-    .btn-stripe-hero:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 8px 32px rgba(245,158,11,0.4); }
+  /* GENERATE BTN */
+  .generate-btn {
+    width: 100%;
+    background: var(--gradient);
+    color: #0D0D0F;
+    border: none;
+    border-radius: 14px;
+    padding: 16px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+    letter-spacing: 0.3px;
+    transition: opacity 0.2s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  .generate-btn:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); }
+  .generate-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    .btn-try-free {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: var(--surface);
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 14px 24px;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      text-decoration: none;
-      transition: border-color 0.2s, transform 0.15s;
-    }
-    .btn-try-free:hover { border-color: var(--purple-light); transform: translateY(-1px); }
+  /* SPINNER */
+  .spinner {
+    width: 18px; height: 18px;
+    border: 2px solid rgba(0,0,0,0.3);
+    border-top-color: #0D0D0F;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── PRICING STRIP ── */
-    .pricing-strip {
-      max-width: 860px;
-      margin: 32px auto;
-      padding: 0 24px;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
-    @media (max-width: 600px) { .pricing-strip { grid-template-columns: 1fr; } }
+  /* RESULTS */
+  .results { display: flex; flex-direction: column; gap: 20px; }
+  .post-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 26px;
+    position: relative;
+    transition: border-color 0.2s;
+    animation: fadeUp 0.4s ease both;
+  }
+  .post-card:hover { border-color: rgba(200,241,53,0.3); }
 
-    .plan-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 24px;
-      position: relative;
-    }
-    .plan-card.featured {
-      border-color: var(--gold);
-      box-shadow: 0 0 0 1px var(--gold), 0 8px 40px rgba(245,158,11,0.15);
-    }
-    .plan-badge {
-      position: absolute;
-      top: -12px; left: 50%; transform: translateX(-50%);
-      background: linear-gradient(135deg, #f59e0b, #ef4444);
-      color: #fff;
-      font-size: 11px;
-      font-weight: 700;
-      padding: 3px 12px;
-      border-radius: 999px;
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      white-space: nowrap;
-    }
-    .plan-name { font-size: 14px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px; }
-    .plan-price { font-size: 36px; font-weight: 800; letter-spacing: -1px; margin-bottom: 4px; }
-    .plan-price span { font-size: 16px; font-weight: 500; color: var(--muted); }
-    .plan-desc { font-size: 13px; color: var(--muted); margin-bottom: 18px; }
-    .plan-features { list-style: none; margin-bottom: 20px; }
-    .plan-features li {
-      font-size: 13px;
-      padding: 5px 0;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .plan-features li::before { content: '✓'; color: #22c55e; font-weight: 700; }
-    .plan-features li.no::before { content: '✗'; color: var(--muted); }
-    .plan-features li.no { color: var(--muted); }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
 
-    .btn-plan-free {
-      width: 100%;
-      padding: 11px;
-      background: transparent;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      color: var(--text);
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: border-color 0.2s;
-    }
-    .btn-plan-free:hover { border-color: var(--purple-light); }
+  .post-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .post-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .copy-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 8px;
+    padding: 5px 12px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.2s;
+  }
+  .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .copy-btn.copied { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
 
-    .btn-plan-premium {
-      width: 100%;
-      padding: 12px;
-      background: linear-gradient(135deg, #f59e0b, #ef4444);
-      border: none;
-      border-radius: var(--radius-sm);
-      color: #fff;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      text-decoration: none;
-      display: block;
-      text-align: center;
-      transition: opacity 0.2s, transform 0.1s;
-      box-shadow: 0 4px 16px rgba(245,158,11,0.25);
-    }
-    .btn-plan-premium:hover { opacity: 0.9; transform: translateY(-1px); }
+  .post-text {
+    font-size: 0.95rem;
+    line-height: 1.75;
+    color: var(--text);
+    white-space: pre-wrap;
+    margin-bottom: 16px;
+  }
+  .hashtags {
+    font-size: 0.85rem;
+    color: #6B8FD4;
+    line-height: 1.8;
+  }
+  .visual-idea {
+    margin-top: 14px;
+    padding: 12px 16px;
+    background: var(--accent-dim);
+    border-radius: 10px;
+    font-size: 0.83rem;
+    color: var(--accent);
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
 
-    /* ── MAIN LAYOUT ── */
-    main {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 8px 24px 40px;
-      display: grid;
-      grid-template-columns: 1fr 420px;
-      gap: 32px;
-      align-items: start;
-    }
-    @media (max-width: 860px) { main { grid-template-columns: 1fr; } }
+  /* ERROR */
+  .error-msg {
+    background: rgba(255,80,80,0.1);
+    border: 1px solid rgba(255,80,80,0.3);
+    color: #FF6B6B;
+    border-radius: 12px;
+    padding: 16px 20px;
+    font-size: 0.9rem;
+    display: none;
+  }
 
-    /* ── FORM CARD ── */
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 28px;
-    }
-    .card-title {
-      font-size: 15px; font-weight: 600;
-      color: var(--muted);
-      text-transform: uppercase; letter-spacing: 0.8px;
-      margin-bottom: 20px;
-    }
+  /* PRICING */
+  .pricing {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(8px);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .pricing.open { display: flex; }
+  .pricing-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 40px;
+    max-width: 420px;
+    width: 100%;
+    position: relative;
+    text-align: center;
+  }
+  .pricing-close {
+    position: absolute;
+    top: 16px; right: 20px;
+    background: none; border: none;
+    color: var(--muted); font-size: 1.4rem;
+    cursor: pointer;
+  }
+  .pricing-card h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.8rem;
+    margin-bottom: 8px;
+  }
+  .pricing-card p { color: var(--muted); font-size: 0.9rem; margin-bottom: 28px; }
+  .price-display {
+    font-family: 'Syne', sans-serif;
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .price-period { color: var(--muted); font-size: 0.85rem; margin-bottom: 28px; }
+  .features { text-align: left; margin-bottom: 28px; }
+  .feature {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 0.9rem; padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .feature:last-child { border-bottom: none; }
+  .feature-icon { color: var(--accent); font-size: 1rem; }
+  .cta-btn {
+    width: 100%;
+    background: var(--gradient);
+    color: #0D0D0F;
+    border: none;
+    border-radius: 14px;
+    padding: 16px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+  }
 
-    .field { margin-bottom: 20px; }
-    .field label {
-      display: block;
-      font-size: 13px; font-weight: 500;
-      color: var(--muted);
-      margin-bottom: 8px;
-      text-transform: uppercase; letter-spacing: 0.5px;
-    }
-
-    input[type="text"], select, textarea {
-      width: 100%;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 12px 14px;
-      color: var(--text);
-      font-size: 14px;
-      font-family: inherit;
-      outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-    input[type="text"]:focus, select:focus, textarea:focus {
-      border-color: var(--purple-light);
-      box-shadow: 0 0 0 3px rgba(124,58,237,0.15);
-    }
-    select option { background: var(--surface2); }
-    textarea { resize: vertical; min-height: 80px; }
-
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-
-    /* TOGGLE */
-    .toggle-row {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 12px 14px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-    }
-    .toggle-label { font-size: 14px; color: var(--text); }
-    .toggle { position: relative; width: 44px; height: 24px; cursor: pointer; }
-    .toggle input { opacity: 0; width: 0; height: 0; }
-    .toggle-slider {
-      position: absolute; inset: 0;
-      background: var(--border); border-radius: 24px; transition: background 0.2s;
-    }
-    .toggle-slider::before {
-      content: '';
-      position: absolute;
-      width: 18px; height: 18px; background: #fff; border-radius: 50%;
-      top: 3px; left: 3px; transition: transform 0.2s;
-    }
-    .toggle input:checked + .toggle-slider { background: var(--purple); }
-    .toggle input:checked + .toggle-slider::before { transform: translateX(20px); }
-
-    /* SLIDER */
-    .slider-row { display: flex; align-items: center; gap: 12px; }
-    .slider-row input[type="range"] {
-      flex: 1; -webkit-appearance: none;
-      height: 4px; background: var(--border); border-radius: 2px;
-      outline: none; border: none; padding: 0;
-    }
-    .slider-row input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 18px; height: 18px; border-radius: 50%;
-      background: var(--purple); cursor: pointer; border: 2px solid #fff;
-    }
-    .slider-val { font-size: 14px; font-weight: 700; color: var(--purple-light); min-width: 24px; text-align: center; }
-
-    /* GENERATE BTN */
-    .btn-generate {
-      width: 100%; padding: 15px;
-      background: var(--ig-grad);
-      border: none; border-radius: var(--radius-sm);
-      color: #fff; font-size: 16px; font-weight: 700;
-      cursor: pointer; transition: opacity 0.2s, transform 0.1s;
-      letter-spacing: 0.3px;
-    }
-    .btn-generate:hover { opacity: 0.92; transform: translateY(-1px); }
-    .btn-generate:active { transform: translateY(0); }
-    .btn-generate:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-    .spinner {
-      display: inline-block; width: 16px; height: 16px;
-      border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff;
-      border-radius: 50%; animation: spin 0.7s linear infinite;
-      vertical-align: middle; margin-right: 8px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* ── PREVIEW ── */
-    .preview-panel { position: sticky; top: 80px; }
-
-    .ig-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      overflow: hidden;
-    }
-    .ig-header {
-      padding: 14px 16px;
-      display: flex; align-items: center; gap: 10px;
-      border-bottom: 1px solid var(--border);
-    }
-    .ig-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--ig-grad); flex-shrink: 0; }
-    .ig-username { font-weight: 600; font-size: 14px; }
-    .ig-handle { font-size: 12px; color: var(--muted); }
-    .ig-dots { margin-left: auto; color: var(--muted); font-size: 20px; line-height: 1; cursor: pointer; }
-
-    .ig-image {
-      width: 100%; aspect-ratio: 1;
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 60px; position: relative; overflow: hidden;
-    }
-    .ig-image::before {
-      content: ''; position: absolute; inset: 0;
-      background: var(--ig-grad); opacity: 0.15;
-    }
-
-    .ig-actions { padding: 12px 16px 8px; display: flex; gap: 16px; }
-    .ig-action { color: var(--text); font-size: 24px; cursor: pointer; opacity: 0.8; }
-    .ig-action:hover { opacity: 1; }
-    .ig-save { margin-left: auto; }
-    .ig-likes { padding: 2px 16px 8px; font-size: 13px; font-weight: 600; }
-
-    .ig-caption {
-      padding: 4px 16px 16px;
-      font-size: 14px; line-height: 1.55;
-      max-height: 240px; overflow-y: auto;
-      white-space: pre-wrap; word-break: break-word;
-    }
-    .ig-caption::-webkit-scrollbar { width: 4px; }
-    .ig-caption::-webkit-scrollbar-track { background: transparent; }
-    .ig-caption::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-    .ig-caption .hashtag { color: #818cf8; }
-    .ig-placeholder { color: var(--muted); font-style: italic; font-size: 14px; padding: 16px; }
-    .ig-timestamp { padding: 0 16px 14px; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
-
-    /* COPY BAR */
-    .copy-bar { display: flex; gap: 10px; margin-top: 12px; }
-    .btn-copy, .btn-regen {
-      flex: 1; padding: 11px;
-      border-radius: var(--radius-sm);
-      font-size: 13px; font-weight: 600;
-      cursor: pointer; transition: all 0.2s; border: none;
-    }
-    .btn-copy { background: var(--purple); color: #fff; }
-    .btn-copy:hover { background: var(--purple-dark); }
-    .btn-copy.copied { background: #22c55e; }
-    .btn-copy:disabled, .btn-regen:disabled { opacity: 0.4; cursor: not-allowed; }
-    .btn-regen { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
-    .btn-regen:hover:not(:disabled) { border-color: var(--purple-light); }
-
-    /* ERROR */
-    .error-box {
-      background: rgba(239,68,68,0.1);
-      border: 1px solid rgba(239,68,68,0.3);
-      border-radius: var(--radius-sm);
-      padding: 12px 14px; font-size: 14px; color: #fca5a5;
-      margin-top: 16px; display: none;
-    }
-
-    /* ── BANNER CTA ── */
-    .cta-banner {
-      max-width: 1200px;
-      margin: 0 auto 0;
-      padding: 0 24px 48px;
-    }
-    .cta-inner {
-      background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(239,68,68,0.12));
-      border: 1px solid rgba(245,158,11,0.25);
-      border-radius: var(--radius);
-      padding: 36px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 24px;
-      flex-wrap: wrap;
-    }
-    .cta-text h3 { font-size: 22px; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.5px; }
-    .cta-text p { color: var(--muted); font-size: 14px; }
-    .cta-text strong { color: #fbbf24; }
-    .btn-stripe-cta {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: linear-gradient(135deg, #f59e0b, #ef4444);
-      color: #fff; border: none; border-radius: var(--radius-sm);
-      padding: 14px 28px; font-size: 15px; font-weight: 700;
-      cursor: pointer; text-decoration: none; white-space: nowrap;
-      transition: opacity 0.2s, transform 0.15s;
-      box-shadow: 0 4px 20px rgba(245,158,11,0.3);
-      flex-shrink: 0;
-    }
-    .btn-stripe-cta:hover { opacity: 0.9; transform: translateY(-2px); }
-
-    /* ── MODAL ── */
-    .modal-overlay {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);
-      z-index: 200; display: flex; align-items: center; justify-content: center;
-      padding: 24px; opacity: 0; pointer-events: none; transition: opacity 0.2s;
-    }
-    .modal-overlay.open { opacity: 1; pointer-events: all; }
-    .modal {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 32px;
-      width: 100%; max-width: 460px;
-      transform: translateY(16px); transition: transform 0.2s;
-    }
-    .modal-overlay.open .modal { transform: translateY(0); }
-    .modal h2 { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
-    .modal p { font-size: 14px; color: var(--muted); margin-bottom: 20px; line-height: 1.5; }
-    .modal a { color: var(--purple-light); }
-    .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
-    .btn-primary {
-      flex: 1; padding: 12px;
-      background: var(--purple); color: #fff; border: none;
-      border-radius: var(--radius-sm); font-size: 14px; font-weight: 600;
-      cursor: pointer; transition: background 0.2s;
-    }
-    .btn-primary:hover { background: var(--purple-dark); }
-    .btn-secondary {
-      padding: 12px 16px; background: transparent; color: var(--muted);
-      border: 1px solid var(--border); border-radius: var(--radius-sm);
-      font-size: 14px; cursor: pointer; transition: border-color 0.2s;
-    }
-    .btn-secondary:hover { border-color: var(--muted); }
-
-    /* ── FOOTER ── */
-    footer {
-      text-align: center; padding: 28px 32px;
-      color: var(--muted); font-size: 13px;
-      border-top: 1px solid var(--border);
-    }
-    footer a { color: var(--purple-light); text-decoration: none; }
-  </style>
+  @media (max-width: 600px) {
+    nav { padding: 16px 20px; }
+    .hero { padding: 50px 20px 40px; }
+    .form-grid { grid-template-columns: 1fr; }
+    .form-card { padding: 22px; }
+    .usage-bar { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .stats { gap: 24px; }
+  }
+</style>
 </head>
 <body>
 
-<!-- API KEY MODAL -->
-<div class="modal-overlay" id="apiModal">
-  <div class="modal">
-    <h2>Clé API Anthropic</h2>
-    <p>
-      PostFlow utilise <strong>Claude Sonnet 4.6</strong> pour générer tes posts.<br><br>
-      Obtiens une clé sur <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>.
-      Elle est stockée uniquement dans ton navigateur.
-    </p>
-    <div class="field">
-      <label>Clé API (sk-ant-...)</label>
-      <input type="text" id="apiKeyInput" placeholder="sk-ant-api03-..." />
-    </div>
-    <div class="modal-btns">
-      <button class="btn-primary" onclick="saveApiKey()">Enregistrer</button>
-      <button class="btn-secondary" onclick="closeModal()">Annuler</button>
-    </div>
-  </div>
-</div>
+<nav>
+  <div class="logo">PostFlow</div>
+  <div class="nav-badge">✦ Propulsé par l'IA</div>
+</nav>
 
-<!-- HEADER -->
-<header>
-  <div class="logo">
-    <div class="logo-icon">✦</div>
-    <span>PostFlow</span>
+<section class="hero">
+  <div class="hero-tag">✦ Générateur IA</div>
+  <h1>7 posts Instagram<br><span>en 10 secondes</span></h1>
+  <p>Décris ton compte, ton ton et ta cible — PostFlow génère une semaine de contenu prête à publier.</p>
+  <div class="stats">
+    <div class="stat"><div class="stat-num">7</div><div class="stat-label">Posts / génération</div></div>
+    <div class="stat"><div class="stat-num">10s</div><div class="stat-label">Temps moyen</div></div>
+    <div class="stat"><div class="stat-num">9€</div><div class="stat-label">/ mois illimité</div></div>
   </div>
-  <div class="header-right">
-    <a href="https://buy.stripe.com/test_00weVc7iJcJM7df8lLdjO00" target="_blank" class="btn-premium-header">
-      ⚡ Commencer maintenant — 9€/mois
-    </a>
-    <div class="api-badge" onclick="openModal()">
-      <div class="api-dot" id="apiDot"></div>
-      <span id="apiStatus">Clé API</span>
+</section>
+
+<div class="app-container">
+
+  <div class="usage-bar">
+    <div class="usage-text"><strong id="usageCount">2</strong> / 3 générations gratuites utilisées</div>
+    <button class="upgrade-btn" onclick="openPricing()">🔓 Passer Premium — 9€/mois</button>
+  </div>
+
+  <div class="form-card">
+    <div class="form-grid">
+      <div class="field">
+        <label>Thème / Niche</label>
+        <input type="text" id="theme" placeholder="ex: coaching bien-être, mode vintage…" />
+      </div>
+      <div class="field">
+        <label>Ton souhaité</label>
+        <select id="tone">
+          <option value="inspirant">Inspirant & motivant</option>
+          <option value="éducatif">Éducatif & informatif</option>
+          <option value="drôle">Drôle & décalé</option>
+          <option value="authentique">Authentique & intime</option>
+          <option value="professionnel">Professionnel & expert</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Cible</label>
+        <input type="text" id="target" placeholder="ex: femmes 25-35 ans, entrepreneurs…" />
+      </div>
+      <div class="field">
+        <label>Langue</label>
+        <select id="lang">
+          <option value="français">Français</option>
+          <option value="anglais">Anglais</option>
+          <option value="espagnol">Espagnol</option>
+        </select>
+      </div>
+      <div class="field full">
+        <label>Infos supplémentaires (optionnel)</label>
+        <textarea id="extra" placeholder="ex: je vends des formations en ligne, je veux promouvoir mon nouveau programme de 21 jours…"></textarea>
+      </div>
     </div>
-  </div>
-</header>
-
-<!-- HERO -->
-<div class="hero">
-  <div class="hero-badge">✦ Propulsé par Claude Sonnet 4.6</div>
-  <h1>Génère des posts Instagram<br><span>viraux en 10 secondes</span></h1>
-  <p>L'IA la plus avancée pour le copywriting Instagram.<br>Hooks percutants, hashtags optimisés, prêt à poster.</p>
-  <div class="hero-ctas">
-    <a href="https://buy.stripe.com/test_00weVc7iJcJM7df8lLdjO00" target="_blank" class="btn-stripe-hero">
-      ⚡ Commencer maintenant — 9€/mois
-    </a>
-    <a href="#generator" class="btn-try-free">Essayer gratuitement →</a>
-  </div>
-</div>
-
-<!-- PRICING -->
-<div class="pricing-strip">
-  <div class="plan-card">
-    <div class="plan-name">Gratuit</div>
-    <div class="plan-price">0€ <span>/ mois</span></div>
-    <div class="plan-desc">Pour découvrir PostFlow</div>
-    <ul class="plan-features">
-      <li>3 générations / jour</li>
-      <li>4 tons disponibles</li>
-      <li>Français uniquement</li>
-      <li class="no">Regénération illimitée</li>
-      <li class="no">Accès prioritaire</li>
-      <li class="no">Nouveaux tons en avant-première</li>
-    </ul>
-    <button class="btn-plan-free" onclick="document.getElementById('generator').scrollIntoView({behavior:'smooth'})">
-      Essayer gratuitement
+    <button class="generate-btn" id="generateBtn" onclick="generatePosts()">
+      <span id="btnText">✦ Générer 7 posts</span>
     </button>
   </div>
 
-  <div class="plan-card featured">
-    <div class="plan-badge">⚡ Le plus populaire</div>
-    <div class="plan-name">Premium</div>
-    <div class="plan-price">9€ <span>/ mois</span></div>
-    <div class="plan-desc">Pour les créateurs sérieux</div>
-    <ul class="plan-features">
-      <li>Générations illimitées</li>
-      <li>6 tons + nouveautés en avant-première</li>
-      <li>4 langues (FR, EN, ES, DE)</li>
-      <li>Regénération en 1 clic</li>
-      <li>Accès prioritaire aux nouvelles features</li>
-      <li>Support dédié</li>
-    </ul>
-    <a href="https://buy.stripe.com/test_00weVc7iJcJM7df8lLdjO00" target="_blank" class="btn-plan-premium">
-      Commencer maintenant →
-    </a>
-  </div>
+  <div class="error-msg" id="errorMsg"></div>
+  <div class="results" id="results"></div>
+
 </div>
 
-<!-- GENERATOR -->
-<main id="generator">
-  <!-- FORM -->
-  <div>
-    <div class="card">
-      <div class="card-title">Paramètres du post</div>
-
-      <div class="field">
-        <label>Sujet / Idée principale</label>
-        <textarea id="topic" placeholder="Ex: Comment j'ai doublé mes revenus en 6 mois grâce à l'automatisation..."></textarea>
-      </div>
-
-      <div class="grid-2">
-        <div class="field">
-          <label>Ton</label>
-          <select id="tone">
-            <option value="inspiring">Inspirant</option>
-            <option value="storytelling" selected>Storytelling</option>
-            <option value="educational">Éducatif</option>
-            <option value="funny">Drôle</option>
-            <option value="professional">Professionnel</option>
-            <option value="provocateur">Provocateur</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>Langue</label>
-          <select id="language">
-            <option value="fr" selected>Français</option>
-            <option value="en">Anglais</option>
-            <option value="es">Espagnol</option>
-            <option value="de">Allemand</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="field">
-        <label>Style d'accroche</label>
-        <select id="postStyle">
-          <option value="hook">Hook percutant (&lt; 8 mots)</option>
-          <option value="question">Question interpellante</option>
-          <option value="stat">Statistique surprenante</option>
-          <option value="story">Micro-histoire personnelle</option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label>Audience cible</label>
-        <input type="text" id="targetAudience" placeholder="Ex: entrepreneurs, créateurs de contenu, étudiants..." />
-      </div>
-
-      <div class="field">
-        <label>Nombre de hashtags — <span id="hashtagLabel">15</span></label>
-        <div class="slider-row">
-          <input type="range" id="hashtagCount" min="5" max="30" value="15"
-            oninput="document.getElementById('hashtagLabel').textContent=this.value;document.getElementById('hashtagVal').textContent=this.value" />
-          <span class="slider-val" id="hashtagVal">15</span>
-        </div>
-      </div>
-
-      <div class="field">
-        <div class="toggle-row">
-          <span class="toggle-label">Inclure des emojis</span>
-          <label class="toggle">
-            <input type="checkbox" id="includeEmojis" checked />
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-      </div>
-
-      <button class="btn-generate" id="generateBtn" onclick="generatePost()">
-        ✦ Générer mon post Instagram
-      </button>
-
-      <div class="error-box" id="errorBox"></div>
+<!-- PRICING MODAL -->
+<div class="pricing" id="pricingModal">
+  <div class="pricing-card">
+    <button class="pricing-close" onclick="closePricing()">✕</button>
+    <h2>PostFlow Premium</h2>
+    <p>Plus de limites. Contenu illimité chaque semaine.</p>
+    <div class="price-display">9€</div>
+    <div class="price-period">par mois · résiliable à tout moment</div>
+    <div class="features">
+      <div class="feature"><span class="feature-icon">✦</span> Générations illimitées</div>
+      <div class="feature"><span class="feature-icon">✦</span> 7 posts + idée visuelle par génération</div>
+      <div class="feature"><span class="feature-icon">✦</span> Hashtags optimisés inclus</div>
+      <div class="feature"><span class="feature-icon">✦</span> Toutes les niches & langues</div>
+      <div class="feature"><span class="feature-icon">✦</span> Nouveaux formats chaque mois</div>
     </div>
-  </div>
-
-  <!-- PREVIEW -->
-  <div class="preview-panel">
-    <div class="card-title" style="margin-bottom:12px;">Aperçu Instagram</div>
-    <div class="ig-card">
-      <div class="ig-header">
-        <div class="ig-avatar"></div>
-        <div>
-          <div class="ig-username">ton_compte</div>
-          <div class="ig-handle">@toncompte · Sponsorisé</div>
-        </div>
-        <div class="ig-dots">···</div>
-      </div>
-      <div class="ig-image"><span id="previewEmoji">✦</span></div>
-      <div class="ig-actions">
-        <span class="ig-action">♡</span>
-        <span class="ig-action">💬</span>
-        <span class="ig-action">✈️</span>
-        <span class="ig-action ig-save">🔖</span>
-      </div>
-      <div class="ig-likes">2 847 J'aime</div>
-      <div class="ig-caption" id="previewCaption">
-        <span class="ig-placeholder">Ton post apparaîtra ici une fois généré...</span>
-      </div>
-      <div class="ig-timestamp">Il y a 2 minutes</div>
-    </div>
-
-    <div class="copy-bar">
-      <button class="btn-copy" id="copyBtn" onclick="copyPost()" disabled>Copier le post</button>
-      <button class="btn-regen" id="regenBtn" onclick="generatePost()" disabled>↻ Regénérer</button>
-    </div>
-  </div>
-</main>
-
-<!-- BOTTOM CTA BANNER -->
-<div class="cta-banner">
-  <div class="cta-inner">
-    <div class="cta-text">
-      <h3>Prêt à dominer Instagram ?</h3>
-      <p>Générations illimitées, 6 tons, 4 langues. <strong>Annulable à tout moment.</strong></p>
-    </div>
-    <a href="https://buy.stripe.com/test_00weVc7iJcJM7df8lLdjO00" target="_blank" class="btn-stripe-cta">
-      ⚡ Commencer maintenant — 9€/mois
-    </a>
+    <a href="https://buy.stripe.com/7sYdR94rF2A41Ri2ga8EM01" target="_blank" class="cta-btn" style="display:block;text-decoration:none;">Commencer maintenant →</a>
   </div>
 </div>
-
-<footer>
-  Fait avec ♥ et <strong>Claude Sonnet 4.6</strong> ·
-  <a href="https://console.anthropic.com" target="_blank">Clé API gratuite</a> ·
-  <a href="https://buy.stripe.com/test_00weVc7iJcJM7df8lLdjO00" target="_blank">PostFlow Premium</a>
-</footer>
 
 <script>
-  const STRIPE = 'https://buy.stripe.com/test_00weVc7iJcJM7df8lLdjO00';
-  let currentPost = '';
+let freeUsed = parseInt(localStorage.getItem('pf_used') || '0');
+const FREE_LIMIT = 3;
 
-  function getApiKey() { return localStorage.getItem('pf_api_key') || ''; }
+function updateUsage() {
+  document.getElementById('usageCount').textContent = freeUsed;
+}
+updateUsage();
 
-  function saveApiKey() {
-    const key = document.getElementById('apiKeyInput').value.trim();
-    if (!key.startsWith('sk-ant-')) { alert('La clé doit commencer par sk-ant-'); return; }
-    localStorage.setItem('pf_api_key', key);
-    updateApiStatus();
-    closeModal();
+function openPricing() {
+  document.getElementById('pricingModal').classList.add('open');
+}
+function closePricing() {
+  document.getElementById('pricingModal').classList.remove('open');
+}
+
+async function generatePosts() {
+  const theme = document.getElementById('theme').value.trim();
+  const tone = document.getElementById('tone').value;
+  const target = document.getElementById('target').value.trim();
+  const lang = document.getElementById('lang').value;
+  const extra = document.getElementById('extra').value.trim();
+  const errorEl = document.getElementById('errorMsg');
+  const resultsEl = document.getElementById('results');
+  const btn = document.getElementById('generateBtn');
+  const btnText = document.getElementById('btnText');
+
+  errorEl.style.display = 'none';
+  errorEl.textContent = '';
+
+  if (!theme) {
+    errorEl.textContent = 'Entre un thème ou une niche pour continuer.';
+    errorEl.style.display = 'block';
+    return;
   }
 
-  function openModal() {
-    document.getElementById('apiKeyInput').value = getApiKey();
-    document.getElementById('apiModal').classList.add('open');
-  }
-  function closeModal() { document.getElementById('apiModal').classList.remove('open'); }
-
-  function updateApiStatus() {
-    const key = getApiKey();
-    document.getElementById('apiDot').classList.toggle('connected', !!key);
-    document.getElementById('apiStatus').textContent = key ? 'API connectée' : 'Clé API';
+  if (freeUsed >= FREE_LIMIT) {
+    openPricing();
+    return;
   }
 
-  document.getElementById('apiModal').addEventListener('click', function(e) {
-    if (e.target === this) closeModal();
-  });
+  btn.disabled = true;
+  btnText.innerHTML = '<div class="spinner"></div> Génération en cours…';
+  resultsEl.innerHTML = '';
 
-  function renderCaption(text) {
-    return text.replace(/(#\w+)/g, '<span class="hashtag">$1</span>');
-  }
+  const prompt = `Tu es un expert en marketing Instagram. Génère exactement 7 posts Instagram uniques et engageants en ${lang}.
 
-  function pickEmoji(text) {
-    const t = text.toLowerCase();
-    if (t.includes('business') || t.includes('entrepren')) return '💼';
-    if (t.includes('fitness') || t.includes('sport') || t.includes('muscle')) return '💪';
-    if (t.includes('money') || t.includes('argent') || t.includes('revenus')) return '💰';
-    if (t.includes('love') || t.includes('amour')) return '❤️';
-    if (t.includes('food') || t.includes('recette') || t.includes('cuisine')) return '🍽️';
-    if (t.includes('travel') || t.includes('voyage')) return '✈️';
-    if (t.includes('motivation') || t.includes('inspir')) return '🔥';
-    if (t.includes('tech') || t.includes('ia') || t.includes('code')) return '🤖';
-    return '✨';
-  }
+Niche/Thème : ${theme}
+Ton : ${tone}
+Cible : ${target || 'audience générale'}
+${extra ? `Contexte : ${extra}` : ''}
 
-  async function generatePost() {
-    const apiKey = getApiKey();
-    if (!apiKey) { openModal(); return; }
+Pour chaque post, fournis exactement ce format JSON (tableau de 7 objets) :
+[
+  {
+    "num": 1,
+    "texte": "Le texte complet du post avec émojis (150-300 mots)",
+    "hashtags": "#hashtag1 #hashtag2 #hashtag3 ... (15-20 hashtags pertinents)",
+    "visuel": "Une idée concrète de visuel ou photo pour accompagner ce post"
+  },
+  ...
+]
 
-    const topic = document.getElementById('topic').value.trim();
-    if (!topic) { showError('Entre un sujet pour générer ton post.'); return; }
+Réponds UNIQUEMENT avec le JSON valide, rien d'autre. Pas de markdown, pas d'explication.`;
 
-    const btn = document.getElementById('generateBtn');
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span>Génération en cours...';
-    document.getElementById('regenBtn').disabled = true;
-    document.getElementById('errorBox').style.display = 'none';
-
-    try {
-      const res = await fetch('/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
-        body: JSON.stringify({
-          topic,
-          tone: document.getElementById('tone').value,
-          language: document.getElementById('language').value,
-          hashtagCount: parseInt(document.getElementById('hashtagCount').value),
-          includeEmojis: document.getElementById('includeEmojis').checked,
-          postStyle: document.getElementById('postStyle').value,
-          targetAudience: document.getElementById('targetAudience').value.trim()
-        })
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Erreur inconnue');
-
-      currentPost = data.content;
-      document.getElementById('previewCaption').innerHTML = renderCaption(currentPost);
-      document.getElementById('previewEmoji').textContent = pickEmoji(topic);
-      document.getElementById('copyBtn').disabled = false;
-      document.getElementById('regenBtn').disabled = false;
-
-    } catch (err) {
-      showError('Erreur : ' + err.message);
-    } finally {
-      btn.disabled = false;
-      btn.innerHTML = '✦ Générer mon post Instagram';
-    }
-  }
-
-  function showError(msg) {
-    const box = document.getElementById('errorBox');
-    box.textContent = msg;
-    box.style.display = 'block';
-  }
-
-  function copyPost() {
-    if (!currentPost) return;
-    navigator.clipboard.writeText(currentPost).then(() => {
-      const btn = document.getElementById('copyBtn');
-      btn.textContent = '✓ Copié !';
-      btn.classList.add('copied');
-      setTimeout(() => { btn.textContent = 'Copier le post'; btn.classList.remove('copied'); }, 2000);
+  try {
+    const response = await fetch("/api/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt })
     });
-  }
 
-  updateApiStatus();
-  if (!getApiKey()) setTimeout(openModal, 900);
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Erreur API');
+    }
+
+    const raw = data.content;
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const posts = JSON.parse(clean);
+
+    freeUsed++;
+    localStorage.setItem('pf_used', freeUsed);
+    updateUsage();
+
+    posts.forEach((post, i) => {
+      const card = document.createElement('div');
+      card.className = 'post-card';
+      card.style.animationDelay = `${i * 0.07}s`;
+      card.innerHTML = `
+        <div class="post-header">
+          <div class="post-num">Post ${post.num || i+1} / 7</div>
+          <button class="copy-btn" onclick="copyPost(this, ${i})">Copier</button>
+        </div>
+        <div class="post-text" id="postText${i}">${escapeHtml(post.texte)}</div>
+        <div class="hashtags">${escapeHtml(post.hashtags)}</div>
+        <div class="visual-idea">💡 <span>${escapeHtml(post.visuel)}</span></div>
+      `;
+      resultsEl.appendChild(card);
+    });
+
+    if (freeUsed >= FREE_LIMIT) {
+      const banner = document.createElement('div');
+      banner.style.cssText = 'background:rgba(200,241,53,0.08);border:1px solid rgba(200,241,53,0.3);border-radius:16px;padding:24px;text-align:center;';
+      banner.innerHTML = `<div style="font-family:Syne,sans-serif;font-size:1.1rem;font-weight:800;margin-bottom:8px;color:#C8F135;">Tu as utilisé tes 3 générations gratuites ✦</div><div style="color:#888899;font-size:0.9rem;margin-bottom:16px;">Passe Premium pour continuer à générer du contenu illimité.</div><a href="https://buy.stripe.com/7sYdR94rF2A41Ri2ga8EM01" target="_blank" style="display:inline-block;background:linear-gradient(135deg,#C8F135,#8FE020);color:#0D0D0F;border:none;border-radius:12px;padding:12px 28px;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;text-decoration:none;">Passer Premium — 9€/mois</a>`;
+      resultsEl.appendChild(banner);
+    }
+
+  } catch (err) {
+    errorEl.textContent = `Erreur : ${err.message}. Vérifie ta connexion et réessaie.`;
+    errorEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btnText.innerHTML = '✦ Générer 7 posts';
+  }
+}
+
+function copyPost(btn, i) {
+  const textEl = document.getElementById(`postText${i}`);
+  const hashEl = textEl.nextElementSibling;
+  const fullText = textEl.textContent + '\n\n' + hashEl.textContent;
+  navigator.clipboard.writeText(fullText).then(() => {
+    btn.textContent = '✓ Copié !';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copier'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+document.getElementById('pricingModal').addEventListener('click', function(e) {
+  if (e.target === this) closePricing();
+});
 </script>
 </body>
 </html>
